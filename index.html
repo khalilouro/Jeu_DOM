@@ -14,27 +14,12 @@
             <p>Choisissez un niveau pour commencer l'aventure.</p>
         </div>
 
-        <div class="level-selection">
-            <div class="level-card" onclick="startGame(1)">
-                <div class="preview" style="background-image: url('asset/image/image1.jpg'); background-size: cover;"></div>
-                <div class="info">
-                    <h3>Niveau 1</h3>
-                    <p>Débutant - 2x2</p>
-                </div>
+        <div class="landing-grid-container">
+            <div id="landing-grid" class="landing-grid">
+                <!-- Pieces will be generated via JS -->
             </div>
-            <div class="level-card" onclick="startGame(2)">
-                <div class="preview" style="background-image: url('asset/image/image2.png'); background-size: cover;"></div>
-                <div class="info">
-                    <h3>Niveau 2</h3>
-                    <p>Intermédiaire - 3x3</p>
-                </div>
-            </div>
-            <div class="level-card" onclick="startGame(3)">
-                <div class="preview" style="background-image: url('asset/image/image3.png'); background-size: cover;"></div>
-                <div class="info">
-                    <h3>Niveau 3</h3>
-                    <p>Expert - 4x3</p>
-                </div>
+            <div class="landing-actions">
+                <button id="main-play-btn" onclick="startGame()" class="btn-primary">Jouer au Puzzle</button>
             </div>
         </div>
     </div>

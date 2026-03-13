@@ -50,42 +50,112 @@ body {
     font-size: 1.2rem;
 }
 
-/* --- SELECTION DES NIVEAUX --- */
-.level-selection {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
+/* --- NOVELLE PAGE D'ACCUEIL --- */
+.landing-grid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
 }
 
-.level-card {
+.landing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 10px;
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.5);
+}
+
+.landing-piece {
+    width: 100px;
+    height: 100px;
+    background-size: 300% 300%;
+    border-radius: 8px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-piece.revealed {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: revealCard 0.6s ease-out forwards;
+}
+
+.landing-piece.hidden-card {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.landing-piece:hover.revealed {
+    transform: scale(1.05) rotate(2deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+@keyframes revealCard {
+    0% {
+        transform: scale(0.8) rotateY(90deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotateY(0deg);
+        opacity: 1;
+    }
+}
+
+.landing-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #c084fc);
+    color: white;
+    border: none;
+    padding: 1.2rem 3rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.5);
+}
+
+.difficulty-picker {
+    display: flex;
+    gap: 1rem;
+}
+
+.difficulty-picker button {
     background: var(--card-bg);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1.5rem;
-    overflow: hidden;
+    color: var(--text-muted);
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
+    transition: 0.2s;
 }
 
-.level-card:hover {
-    transform: translateY(-10px);
+.difficulty-picker button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
     border-color: var(--primary);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-}
-
-.level-card .preview {
-    height: 180px;
-    background-size: cover;
-    background-position: center;
-}
-
-.level-card .info {
-    padding: 1.5rem;
-}
-
-.level-card h3 {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 /* --- INTERFACE DE JEU --- */
