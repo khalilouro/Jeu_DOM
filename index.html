@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeu - DOM</title>
+    <title>Jigo Solitaire</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-    
+
     <div id="home-screen" class="screen">
         <div class="hero">
-            <h1>Jeu de Puzzle</h1>
-            <p>Choisissez un niveau pour commencer l'aventure.</p>
+            <h1>Jigo Solitaire</h1>
         </div>
 
         <div class="landing-grid-container">
@@ -29,7 +30,7 @@
             <button onclick="goToHome()" class="btn-back">← Retour</button>
             <h2 id="level-title">Niveau 1</h2>
         </div>
-        
+
         <div class="grid-container">
             <div class="grid" id="puzzle-grid">
                 <!-- Les cases seront générées en JS -->
@@ -37,6 +38,25 @@
         </div>
     </div>
 
+    <div id="victory-screen" class="screen hidden">
+        <div id="confetti-container"></div>
+        <div class="hero">
+            <h1>FÉLICITATIONS !</h1>
+            <p>Vous avez relevé tous les défis et complété le puzzle mystère !</p>
+        </div>
+
+        <div class="victory-content">
+            <div class="full-reward-container">
+                <img id="full-reward-img" src="asset/image/image4.png" alt="Récompense finale">
+            </div>
+
+            <div class="victory-actions">
+                <button onclick="restartGame()" class="btn-primary">Recommencer l'aventure</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/script.js"></script>
 </body>
+
 </html>

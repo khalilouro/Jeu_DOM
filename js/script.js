@@ -12,24 +12,36 @@ const correct = [
 const levels = {
     1: { image: 'asset/image/image1.jpg', title: "Niveau 1" },
     2: { image: 'asset/image/image2.png', title: "Niveau 2" },
-    3: { image: 'asset/image/image3.png', title: "Niveau 3" }
+    3: { image: 'asset/image/image3.png', title: "Niveau 3" },
+    4: { image: 'asset/image/image5.png', title: "Niveau 4 - Sous l'Océan" },
+    5: { image: 'asset/image/image6.png', title: "Niveau 5 - Cosmos" },
+    6: { image: 'asset/image/image7.png', title: "Niveau 6 - Forêt Magique" },
+    7: { image: 'asset/image/image8.png', title: "Niveau 7 - Pyramides" },
+    8: { image: 'asset/image/image9.png', title: "Niveau 8 - Cyberpunk" },
+    9: { image: 'asset/image/image10.png', title: "Niveau 9 - Repaire du Dragon" }
 };
 
 /* --- SYSTÈME DE PROGRESSION --- */
 const ProgressManager = {
     get() {
         const saved = localStorage.getItem('puzzleProgress');
-        return saved ? JSON.parse(saved) : { currentLevel: 1, revealedCards: 0 };
+        // Initial state: Level 1 unlocked, 0 pieces of the secret puzzle revealed
+        return saved ? JSON.parse(saved) : { currentLevel: 1, unlockedLevels: [1], revealedPieces: 0 };
     },
     save(progress) {
         localStorage.setItem('puzzleProgress', JSON.stringify(progress));
     },
-    revealNext() {
+    completeLevel(level) {
         let p = this.get();
-        p.revealedCards++;
-        if (p.revealedCards >= 9) {
-            p.revealedCards = 0;
-            p.currentLevel = (p.currentLevel % 3) + 1; // Tourne entre 1, 2, 3
+        // Reveal a piece of the secret puzzle (image4.png)
+        if (p.revealedPieces < 9) {
+            p.revealedPieces++;
+        }
+        // Unlock next level
+        const nextLevel = level + 1;
+        if (levels[nextLevel] && !p.unlockedLevels.includes(nextLevel)) {
+            p.unlockedLevels.push(nextLevel);
+            p.currentLevel = nextLevel;
         }
         this.save(p);
     }
@@ -41,7 +53,9 @@ function initLandingGrid() {
     if (!landingGrid) return;
 
     const progress = ProgressManager.get();
-    const img = levels[progress.currentLevel].image;
+    const secretImg = 'asset/image/image4.png'; // La photo récompense
+    
+    // Positions pour un puzzle 3x3 sur l'accueil
     const positions = [
         "0% 0%", "50% 0%", "100% 0%",
         "0% 50%", "50% 50%", "100% 50%",
@@ -53,9 +67,8 @@ function initLandingGrid() {
         const piece = document.createElement('div');
         piece.className = 'landing-piece';
 
-        // Si la carte est révélée, on affiche l'image, sinon un fond sombre/masqué
-        if (index < progress.revealedCards) {
-            piece.style.backgroundImage = `url('${img}')`;
+        if (index < progress.revealedPieces) {
+            piece.style.backgroundImage = `url('${secretImg}')`;
             piece.style.backgroundPosition = pos;
             piece.classList.add('revealed');
         } else {
@@ -66,29 +79,42 @@ function initLandingGrid() {
 
         landingGrid.appendChild(piece);
     });
+
+    // Mettre à jour le titre ou le bouton si besoin
+    const playBtn = document.getElementById('main-play-btn');
+    if (playBtn) {
+        playBtn.innerText = `Jouer au Niveau ${progress.currentLevel}`;
+    }
 }
 
 function startGame() {
     const progress = ProgressManager.get();
-    currentImage = levels[progress.currentLevel].image;
-    document.getElementById('level-title').innerText = `Niveau ${progress.revealedCards + 1}`;
+    const levelData = levels[progress.currentLevel];
+    currentImage = levelData.image;
+    document.getElementById('level-title').innerText = levelData.title;
 
     document.getElementById('home-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
 
-    // Grilles aléatoires (3x3 minimum pour correspondre à l'accueil)
-    const possibleGrids = [
-        { r: 3, c: 3 },
-        { r: 3, c: 4 },
-        { r: 4, c: 3 }
-    ];
-    const chosen = possibleGrids[Math.floor(Math.random() * possibleGrids.length)];
+    // Difficulté progressive basée sur le niveau
+    let gridSize;
+    if (progress.currentLevel <= 2) {
+        gridSize = { r: 3, c: 3 }; // Débutant
+    } else if (progress.currentLevel <= 4) {
+        gridSize = { r: 3, c: 4 }; // Facile
+    } else if (progress.currentLevel <= 6) {
+        gridSize = { r: 4, c: 4 }; // Moyen
+    } else if (progress.currentLevel <= 8) {
+        gridSize = { r: 4, c: 5 }; // Difficile
+    } else {
+        gridSize = { r: 5, c: 5 }; // Expert (Niveau 9)
+    }
 
     const grid = document.getElementById('puzzle-grid');
-    grid.style.gridTemplateColumns = `repeat(${chosen.c}, 150px)`;
-    grid.style.gridTemplateRows = `repeat(${chosen.r}, 150px)`;
+    grid.style.gridTemplateColumns = `repeat(${gridSize.c}, 150px)`;
+    grid.style.gridTemplateRows = `repeat(${gridSize.r}, 150px)`;
 
-    initPuzzle(chosen.r, chosen.c);
+    initPuzzle(gridSize.r, gridSize.c);
 }
 
 function goToHome() {
@@ -234,23 +260,76 @@ function getGroup(cell, cols, rows) {
 }
 
 function checkWin(cols, rows) {
-    const correctPositions = [];
-    for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-            let posX = (x / (cols - 1)) * 100;
-            let posY = (y / (rows - 1)) * 100;
-            correctPositions.push(`${posX}% ${posY}%`);
-        }
-    }
+    const isWin = cells.every((cell, i) => {
+        const currentPos = cell.style.backgroundPosition.split(" ").map(parseFloat);
+        const targetX = (i % cols) / (cols - 1) * 100;
+        const targetY = Math.floor(i / cols) / (rows - 1) * 100;
+        const matchX = Math.abs(currentPos[0] - targetX) < 0.5;
+        const matchY = Math.abs(currentPos[1] - targetY) < 0.5;
+        return matchX && matchY;
+    });
 
-    if (cells.every((c, i) => {
-        let pos = c.style.backgroundPosition.replace(/ /g, " ").trim();
-        return pos === correctPositions[i];
-    })) {
-        ProgressManager.revealNext(); // Mettre à jour la progression !
+    if (isWin) {
+        const progress = ProgressManager.get();
+        const levelFinished = progress.currentLevel;
+        ProgressManager.completeLevel(levelFinished); 
+
         setTimeout(() => {
-            alert("Bravo ! Vous avez révélé une nouvelle carte ! 🎉");
-            goToHome();
+            const updatedProgress = ProgressManager.get();
+            if (updatedProgress.revealedPieces >= 9 && levelFinished === 9) {
+                triggerVictory();
+            } else {
+                alert(`Bravo ! Niveau ${levelFinished} terminé. Une nouvelle partie de la photo est révélée !`);
+                goToHome();
+            }
         }, 300);
     }
 }
+
+/* --- SYSTÈME DE VICTOIRE FINALE --- */
+function triggerVictory() {
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('victory-screen').classList.remove('hidden');
+    
+    // Lancer les paillettes !
+    createConfetti();
+}
+
+function createConfetti() {
+    const container = document.getElementById('confetti-container');
+    const colors = ['#6366f1', '#c084fc', '#f43f5e', '#fbbf24', '#10b981'];
+    
+    for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Propriétés aléatoires
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 8 + 6 + 'px';
+        confetti.style.height = confetti.style.width;
+        
+        // Animation aléatoire
+        const duration = Math.random() * 3 + 2;
+        const delay = Math.random() * 2;
+        confetti.style.animationDuration = duration + 's';
+        confetti.style.animationDelay = delay + 's';
+        
+        container.appendChild(confetti);
+        
+        // Nettoyage
+        setTimeout(() => confetti.remove(), (duration + delay) * 1000);
+    }
+}
+
+function restartGame() {
+    if (confirm("Voulez-vous vraiment recommencer l'aventure depuis le début ?")) {
+        localStorage.removeItem('puzzleProgress');
+        document.getElementById('victory-screen').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+        initLandingGrid();
+    }
+}
+
+window.restartGame = restartGame;
