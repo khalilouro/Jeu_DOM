@@ -10,7 +10,9 @@ function initPuzzle(rows, cols) {
         for (let x = 0; x < cols; x++) {
             let posX = cols > 1 ? (x / (cols - 1)) * 100 : 0;
             let posY = rows > 1 ? (y / (rows - 1)) * 100 : 0;
-            correctPositions.push(`${posX}% ${posY}%`);
+            // On arrondit pour éviter les problèmes de précision flottante
+            const posString = `${posX.toFixed(4)}% ${posY.toFixed(4)}%`;
+            correctPositions.push(posString);
         }
     }
 
@@ -27,6 +29,7 @@ function initPuzzle(rows, cols) {
         cell.style.backgroundImage = `url('${currentImage}')`;
         cell.style.backgroundSize = bgSize;
         cell.style.backgroundPosition = images[i];
+        cell.dataset.pos = images[i]; // Stockage fiable pour la vérification
         cell.onclick = function () { handleInteraction(this, cols, rows); };
         grid.appendChild(cell);
         cells.push(cell);
@@ -73,20 +76,28 @@ function executeMove(p1, p2, cols, rows) {
     if (targets.includes(null)) return;
 
     let snapshot = new Map();
-    cells.forEach(c => snapshot.set(c, c.style.backgroundPosition));
+    cells.forEach(c => snapshot.set(c, c.dataset.pos));
 
     let displaced = targets.filter(t => !firstGroup.includes(t));
     let displacedImgs = displaced.map(t => snapshot.get(t));
 
-    firstGroup.forEach((s, i) => targets[i].style.backgroundPosition = snapshot.get(s));
+    firstGroup.forEach((s, i) => {
+        const newPos = snapshot.get(s);
+        targets[i].style.backgroundPosition = newPos;
+        targets[i].dataset.pos = newPos;
+    });
 
     let vacated = firstGroup.filter(s => !targets.includes(s));
-    vacated.forEach((v, i) => v.style.backgroundPosition = displacedImgs.shift());
+    vacated.forEach((v, i) => {
+        const newPos = displacedImgs.shift();
+        v.style.backgroundPosition = newPos;
+        v.dataset.pos = newPos;
+    });
 }
 
 function isMatch(c1, c2, dx, dy, cols, rows) {
-    let p1 = c1.style.backgroundPosition.split(" ").map(parseFloat);
-    let p2 = c2.style.backgroundPosition.split(" ").map(parseFloat);
+    let p1 = c1.dataset.pos.split(" ").map(parseFloat);
+    let p2 = c2.dataset.pos.split(" ").map(parseFloat);
 
     let stepX = 100 / (cols - 1);
     let stepY = 100 / (rows - 1);
@@ -128,11 +139,11 @@ function getGroup(cell, cols, rows) {
 
 function checkWin(cols, rows) {
     const isWin = cells.every((cell, i) => {
-        const currentPos = cell.style.backgroundPosition.split(" ").map(parseFloat);
+        const currentPos = cell.dataset.pos.split(" ").map(parseFloat);
         const targetX = (i % cols) / (cols - 1) * 100;
         const targetY = Math.floor(i / cols) / (rows - 1) * 100;
-        const matchX = Math.abs(currentPos[0] - targetX) < 0.5;
-        const matchY = Math.abs(currentPos[1] - targetY) < 0.5;
+        const matchX = Math.abs(currentPos[0] - targetX) < 0.1;
+        const matchY = Math.abs(currentPos[1] - targetY) < 0.1;
         return matchX && matchY;
     });
 
@@ -146,7 +157,8 @@ function checkWin(cols, rows) {
             if (updatedProgress.revealedPieces >= 9 && levelFinished === 9) {
                 triggerVictory();
             } else {
-                alert(`Bravo ! Niveau ${levelFinished} terminé. Une nouvelle partie de la photo est révélée !`);
+                // Utilisation de guillemets simples pour éviter les bugs d'encodage selon le navigateur
+                alert('Bravo ! Niveau ' + levelFinished + ' terminé. Une nouvelle partie de la photo est révélée !');
                 goToHome();
             }
         }, 300);
