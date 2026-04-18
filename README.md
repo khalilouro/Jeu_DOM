@@ -1,6 +1,6 @@
-# Jeu_DOM
+# Fragment
 
-Jeu_DOM est un jeu de puzzle JavaScript inspiré du Jigo Solitaire. Le joueur doit reconstituer une image en déplaçant et en échangeant des morceaux, avec une progression de niveaux croissante et un système de récompense visuel.
+Fragment est un jeu de puzzle JavaScript inspiré du Jigo Solitaire. Le joueur doit reconstituer une image en déplaçant et en échangeant des morceaux, avec une progression de niveaux croissante et un système de récompense visuel.
 
 ## Objectif du projet
 
